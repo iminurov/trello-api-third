@@ -1,9 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, Length, MaxLength } from 'class-validator';
-import { PartialType } from '@nestjs/mapped-types';
-import { ApiOperation, ApiProperty, ApiResponse } from '@nestjs/swagger';
-import { User } from '../user.entity';
 
-export class CreateUserDto {
+export class AuthDto {
   @ApiProperty({ example: 'user@mail.ru', description: 'Почта' })
   @IsString({ message: 'Должно быть строкой' })
   @MaxLength(100, { always: true })
@@ -16,12 +14,10 @@ export class CreateUserDto {
   password: string;
 
   @ApiProperty({ example: 'Artem', description: 'Имя' })
-  @IsString({ message: 'Должно быть строкой' })
+  @IsString()
   firstName: string;
 
   @ApiProperty({ example: 'Gabatov', description: 'Фамилия' })
-  @IsString({ message: 'Должно быть строкой' })
+  @IsString({ always: true })
   lastName: string;
 }
-
-export class UpdateUserDto extends PartialType(CreateUserDto) {}

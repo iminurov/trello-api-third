@@ -1,12 +1,17 @@
 import { Module } from '@nestjs/common';
 import { PlaylistsService } from './playlists.service';
 import { PlaylistsController } from './playlists.controller';
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { PlaylistEntity } from "./playlist.entity";
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Playlist } from './playlist.entity';
+import { Content } from '../contents/content.entity';
+import { PlaylistContentTable } from '../playist_content/RelationPlaylistContent';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PlaylistEntity])],
+  imports: [
+    TypeOrmModule.forFeature([Playlist, Content, PlaylistContentTable]),
+  ],
   controllers: [PlaylistsController],
-  providers: [PlaylistsService]
+  providers: [PlaylistsService],
+  exports: [PlaylistsService],
 })
 export class PlaylistsModule {}

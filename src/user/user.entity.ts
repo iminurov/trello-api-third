@@ -5,54 +5,68 @@ import {
   JoinColumn,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
-} from "typeorm";
-import { classToPlain, Exclude, plainToInstance, Type } from "class-transformer";
-import * as events from "events";
-import * as Events from "events";
-import { EventEntity } from "../event/event.entity";
-import { MonitorEntity } from "../monitors/monitor.entity";
-import { ContentEntity } from "../contents/content.entity";
+  UpdateDateColumn,
+} from 'typeorm';
+import {
+  classToPlain,
+  Exclude,
+  plainToInstance,
+  Type,
+} from 'class-transformer';
+import { DataType, HasMany } from 'sequelize-typescript';
+import { ApiProperty } from '@nestjs/swagger';
+import { Event } from '../event/event.entity';
+import { Content } from '../contents/content.entity';
 
-@Entity()
-export class UserEntity {
+// interface UserCreationAttrs {
+//   email: string;
+//   password: string;
+// }
 
+@Entity('/Users')
+export class User {
+  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
-
+  @ApiProperty({ example: '01.01.2001', description: 'Дата создания' })
   @CreateDateColumn({ nullable: true })
   createdAt?: Date;
 
+  @ApiProperty({ example: '02.02.2002', description: 'Дата изменения' })
   @UpdateDateColumn({ nullable: true })
   updatedAt?: Date;
 
+  @ApiProperty({ example: 'minurovi@gmail.com', description: 'Почтовый ящик' })
   @Column({ unique: true })
   email: string;
 
-  @Exclude({ toPlainOnly: true })
-  @Column({ nullable: true})
+  @ApiProperty({ example: '0000', description: 'Пароль' })
+  // @Exclude({ toPlainOnly: true })
+  @Column({ nullable: true })
   password: string;
 
-  @Column({ unique: true})
-  username: string;
+  @ApiProperty({ example: 'Илья', description: 'Имя пользователя' })
+  @Column({})
+  firstName: string;
 
-  @Column({ nullable: true})
-  lastname: string;
+  @ApiProperty({ example: 'Крауз', description: 'Фамилия пользоваеля' })
+  @Column({ nullable: true })
+  lastName: string;
 
-  @OneToMany(() => EventEntity, (userId) => userId.user)
-  @Type(() => EventEntity)
+  @OneToMany(() => Event, (event) => event.userId, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @Type(() => Event)
   @JoinColumn()
-  events?: EventEntity[];
+  event: Event[];
 
-  @OneToMany(() => ContentEntity, (content) => content.user)
-  @Type(() => EventEntity)
+  @OneToMany(() => Content, (content) => content.id, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @Type(() => Content)
   @JoinColumn()
-  contents?: ContentEntity[];
-
-  // toJSON() {
-  //   return plainToInstance(this); //что возвращается  в файле что?
-  // }
+  content: Content[];
 }
-
-export class User{}

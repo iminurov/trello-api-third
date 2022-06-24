@@ -1,17 +1,58 @@
-import { ApiTags } from "@nestjs/swagger";
-import { Controller } from "@nestjs/common";
-import { Crud } from "@nestjsx/crud";
-import { MonitorEntity } from "./monitor.entity";
-import { MonitorsService } from "./monitors.service";
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller } from '@nestjs/common';
+import { Crud, CrudController } from '@nestjsx/crud';
+import { Monitor } from './monitor.entity';
+import { MonitorsService } from './monitors.service';
+import { CreateUserDto, UpdateUserDto } from '../user/dto/create-user.dto';
+import { CreateMonitorDto } from './dto/create-monitor.dto';
+import { UpdateMonitorDto } from './dto/update-monitor.dto';
+import { User } from '../user/user.entity';
 
 @Crud({
   model: {
-    type: MonitorEntity
+    type: Monitor,
   },
-
+  dto: {
+    create: CreateMonitorDto,
+    update: UpdateMonitorDto,
+  },
+  params: {
+    id: {
+      field: 'id',
+      type: 'string',
+      primary: true,
+    },
+  },
   routes: {
-    deleteOneBase: {
-      returnDeleted: false,
+    updateOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'Изменить экран' }),
+        ApiResponse({ status: 200, type: UpdateMonitorDto }),
+      ],
+    },
+    getOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'Получить экран' }),
+        ApiResponse({ status: 200, type: [Monitor] }),
+      ],
+    },
+    createManyBase: {
+      decorators: [
+        ApiOperation({ summary: 'Создать много экранов' }),
+        ApiResponse({ status: 200, type: CreateMonitorDto }),
+      ],
+    },
+    getManyBase: {
+      decorators: [
+        ApiOperation({ summary: 'Получить все экраны' }),
+        ApiResponse({ status: 200, type: [Monitor] }),
+      ],
+    },
+    createOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'Создать экран' }),
+        ApiResponse({ status: 200, type: CreateMonitorDto }),
+      ],
     },
   },
   query: {
@@ -20,18 +61,18 @@ import { MonitorsService } from "./monitors.service";
     allow: ['name'],
     join: {
       users: {
-        alias: 'companyUsers',
+        alias: '',
         exclude: ['email'],
         eager: true,
       },
-      'users.projects': {
+      '': {
         eager: true,
-        alias: 'usersProjects',
+        alias: '',
         allow: ['name'],
       },
-      'users.projects.company': {
+      '1': {
         eager: true,
-        alias: 'usersProjectsCompany',
+        alias: '',
       },
       projects: {
         eager: true,
@@ -40,8 +81,8 @@ import { MonitorsService } from "./monitors.service";
     },
   },
 })
-@ApiTags('Monitors')
-@Controller('Экраны')
-export class MonitorsController {
+@ApiTags('Экраны')
+@Controller('monitors')
+export class MonitorsController implements CrudController<Monitor> {
   constructor(public service: MonitorsService) {}
 }

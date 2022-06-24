@@ -1,46 +1,65 @@
-import { ApiTags } from "@nestjs/swagger";
-import { Controller } from "@nestjs/common";
-import { EventService } from "./event.service";
-import { Crud } from "@nestjsx/crud";
-import { EventEntity } from "./event.entity";
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller } from '@nestjs/common';
+import { EventsService } from './event.service';
+import { Crud, CrudController } from '@nestjsx/crud';
+import { Event } from './event.entity';
+import { CreateEventDto } from './dto/create-event.dto';
+import { UpdateEventDto } from './dto/update-event.dto';
+import { CreatePlaylistDto } from '../playlists/dto/create-playlist.dto';
+// import { CreateEventDto } from "./dto/create-event.dto";
+// import { UpdateEventDto } from "./dto/update-event.dto";
 
 @Crud({
   model: {
-    type: EventEntity
+    type: Event,
   },
-  routes: {
-    deleteOneBase: {
-      returnDeleted: false,
+  dto: {
+    create: CreateEventDto,
+    update: UpdateEventDto,
+  },
+  params: {
+    id: {
+      field: 'id',
+      type: 'string',
+      primary: true,
     },
   },
-  query: {
-    alwaysPaginate: false,
-    softDelete: true,
-    allow: ['name'],
-    join: {
-      users: {
-        alias: 'companyUsers',
-        exclude: ['email'],
-        eager: true,
-      },
-      'users.projects': {
-        eager: true,
-        alias: 'usersProjects',
-        allow: ['name'],
-      },
-      'users.projects.company': {
-        eager: true,
-        alias: 'usersProjectsCompany',
-      },
-      projects: {
-        eager: true,
-        select: false,
-      },
+  // в роутах прописываются Guards и Api-шки
+  routes: {
+    updateOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'ИЗменить событие' }),
+        ApiResponse({ status: 200, type: CreateEventDto }),
+      ],
+    },
+    getOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'Получить событие' }),
+        ApiResponse({ status: 200, type: [Event] }),
+      ],
+    },
+    createManyBase: {
+      decorators: [
+        ApiOperation({ summary: 'Создать много событий' }),
+        ApiResponse({ status: 200, type: CreateEventDto }),
+      ],
+    },
+    getManyBase: {
+      decorators: [
+        ApiOperation({ summary: 'Получить все события' }),
+        ApiResponse({ status: 200, type: [Event] }),
+      ],
+    },
+    createOneBase: {
+      decorators: [
+        ApiOperation({ summary: 'Создать событие' }),
+        ApiResponse({ status: 200, type: CreateEventDto }),
+      ],
     },
   },
 })
 @ApiTags('Event')
 @Controller('Мероприятие')
-export class EventController {
-  constructor(public service: EventService) {}
+export class EventController implements CrudController<Event> {
+  constructor(public service: EventsService) {}
 }
