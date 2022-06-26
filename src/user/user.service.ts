@@ -11,9 +11,10 @@ export class UserService extends TypeOrmCrudService<User> {
     super(repo);
   }
   async createUser(dto: CreateUserDto) {
-    const user = await this.repo.save(dto);
+    console.log(dto)
+    const user = this.repo.create(dto);
     // const role = await this.roleDervice.getRoleByValue('')
-    await user;
+    await this.repo.save(user);
     // user.roles = [role]
     return user;
   }
