@@ -1,72 +1,73 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
-  ManyToMany,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  TableForeignKey,
+  UpdateDateColumn,
 } from 'typeorm';
-import { IsEnum, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { PlaylistContentTable } from '../playist_content/RelationPlaylistContent';
-import { User } from '../user/user.entity';
+import { PlaylistContentTable } from './RelationPlaylistContent';
+import { User } from '../users/user.entity';
+import { FileTypes } from './types/types';
+import { IsNumber } from 'class-validator';
 
-@Entity('Content')
+@Entity('content')
 export class Content {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty()
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({
-    example: '1',
-    description: 'Уникальный идентификатор связи с плейлистом',
+  @ApiProperty()
+  @Column({ nullable: true })
+  title: string;
+
+  @ApiProperty()
+  @Column({
+    type: 'enum',
+    enum: FileTypes,
+    nullable: true,
   })
-  @IsString({ always: true })
-  @Column()
-  playlistId: string;
+  fileType: FileTypes | null;
 
-  @ApiProperty({ example: '', description: 'Тип (формат) файла' })
-  @IsEnum({ always: true })
-  @Column()
-  fileType: string;
-
-  @ApiProperty({ example: 'Виды Аяски', description: 'Название файла' })
-  @IsString({ always: true })
-  @Column()
-  name: string;
-
-  @ApiProperty({ example: '', description: 'Ключ' })
+  @ApiProperty()
   @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
-  @IsString({ always: true })
   key: string;
 
-  @ApiProperty({ example: '01.01.2021', description: 'Дата создания контента' })
-  @IsString({ always: true })
+  @ApiProperty({ example: '1', description: 'Идентификатор пользователя' })
+  @IsNumber({ allowNaN: false })
   @Column()
-  createAt: string;
+  userId: User['id'];
 
   @ApiProperty({
-    example: '01.01.2021',
-    description: 'Дата изменения плейлиста',
+    example: '1',
+    description: 'Уникальный идентификатор плейлиста',
   })
-  @IsString({ always: true })
-  @Column()
+  @Column({
+    nullable: true,
+  })
+  playlistId: string;
+
+  @ApiProperty()
+  @CreateDateColumn({ type: 'timestamptz' })
+  createAt: string;
+
+  @ApiProperty()
+  @UpdateDateColumn({ type: 'timestamptz' })
   updateAt: string;
 
-  @IsString({ always: true })
-  @Column()
-  userId: string;
-
-  @ManyToOne(() => User, (user) => user.id, {
+  @ManyToOne(() => User, (user) => user.content, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
+  @JoinColumn()
   user: User;
 
   @OneToMany(
     () => PlaylistContentTable,
-    (PlaylistContentTable) => PlaylistContentTable.contentId,
+    (PlaylistContentTable) => PlaylistContentTable.content,
   )
   PlaylistContent: PlaylistContentTable[];
 }

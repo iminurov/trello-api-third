@@ -1,16 +1,18 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
-  JoinColumn,
-  ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { IsDate, IsString, MaxLength } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Monitor } from '../monitors/monitor.entity';
-import { PlaylistContentTable } from '../playist_content/RelationPlaylistContent';
+import { PlaylistContentTable } from '../contents/RelationPlaylistContent';
+import { User } from '../users/user.entity';
 
 @Entity('Playlist')
 export class Playlist {
@@ -20,22 +22,22 @@ export class Playlist {
 
   @ApiProperty({
     example: '1',
-    description: 'Уникальный идентификатор связи с организатором',
+    description: 'Уникальный идентификатор связи с пользователем',
   })
-  @IsString({ always: true })
+  @IsNumber({ allowNaN: false })
   @Column()
-  userId: string;
+  userId: User['id'];
 
   @ApiProperty({
     example: '1',
     description: 'Уникальный идентификатор связи с монитором',
   })
-  @IsString({ always: true })
+  @IsString({ always: false })
   @Column()
   monitorsId: string;
 
   @ApiProperty({ example: 'Звуки природы', description: 'Назнвание плейлиста' })
-  @IsString({ always: true })
+  @IsString({ always: false })
   @Column()
   name: string;
 
@@ -43,39 +45,30 @@ export class Playlist {
     example: '01.01.2021',
     description: 'Дата создания плейлиста',
   })
-  @IsString({ always: true })
-  @Column()
-  createAt: string;
+  @IsString({ always: false })
+  @CreateDateColumn({ nullable: true })
+  createdAt?: Date;
 
   @ApiProperty({
     example: '01.01.2021',
     description: 'Дата обновления плейлиста',
   })
-  @IsString({ always: true })
-  @Column()
-  updateAt: string;
+  @IsString({ always: false })
+  @UpdateDateColumn({ nullable: true })
+  updatedAt?: Date;
 
-  @OneToOne(() => Monitor, (monitor) => monitor.id)
-  monitor: Monitor;
+  @ManyToOne(() => User, (user) => user.playlist, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  user: User;
+
+  @OneToOne(() => Monitor, (monitor) => monitor.playlist)
+  monitors: Monitor;
 
   @OneToMany(
     () => PlaylistContentTable,
-    (PlaylistContentTable) => PlaylistContentTable.playlistId,
+    (PlaylistContentTable) => PlaylistContentTable.playlist,
   )
   PlaylistContent: PlaylistContentTable[];
 }
-
-// @ManyToMany(()=> Content, () => Playist_Content)
-// contents: Content[];
-
-// @OneToOne(() => MonitorEntity)
-// monitor: MonitorEntity;
-//
-// @OneToMany(() => Playist_Content, (playlistId) => playlistId.playlist)
-// @Type(() => Playist_Content)
-//
-//
-//
-// @OneToMany(() => MonitorEntity, (eventId) => eventId.event)
-// @Type(() => Playist_Content)
-// playistContentEntities?: Playist_Content[];

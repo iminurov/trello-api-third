@@ -1,25 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { JwtAuthGuard } from './auth/jwt.auth.guard';
 import { ValidationPipe } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 
 async function bootstrap() {
-  const PORT = process.env.PORT || 5000;
-  const app = await NestFactory.create(AppModule);
-
-  const config = new DocumentBuilder()
-    .setTitle('Приложение Ильдара CMS')
-    .setDescription('Второе и третье задание')
-    .setVersion('1.0.0')
-    .addTag('Ильдар Разработчик')
-    .build();
+  const app = await NestFactory.create(AppModule, { cors: true });
+  app.setGlobalPrefix('api');
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  const config = new DocumentBuilder().addBearerAuth().build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('/api/docs', app, document);
-  //Испоьзовал общий с ядра
-  app.useGlobalPipes(new ValidationPipe());
-  // app.useGlobalGuards(new JwtAuthGuard());
+  SwaggerModule.setup('api/docs', app, document, {
+    swaggerOptions: {
+      apisSorter: 'alpha',
+      tagsSorter: 'alpha',
+      operationsSorter: 'alpha',
+    },
+  });
 
-  await app.listen(PORT, () => console.log('Server started on port = 5000'));
+  await app.listen(3003);
+  console.log(`Swagger API doc at http://localhost:${3003}/api/docs`);
 }
+
 bootstrap();

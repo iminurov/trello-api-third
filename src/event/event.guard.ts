@@ -6,36 +6,35 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Event } from './event.entity';
 import { User } from '../users/user.entity';
-import { Content } from './content.entity';
 
 @Injectable()
-export class ContentOwnerGuard implements CanActivate {
+export class EventsOwnerGuard implements CanActivate {
   constructor(
-    @InjectRepository(Content)
-    readonly contentRepository: Repository<Content>,
+    @InjectRepository(Event)
+    readonly eventRepository: Repository<Event>,
     @InjectRepository(User)
     readonly userRepository: Repository<User>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-
-    const contentId = request.body.contentId || request.params.id;
+    const eventId = request.body.eventId || request.params.id;
     const currentUserId = await request.user.sub;
     const user = await this.userRepository.findOne({
       where: { auth0Id: currentUserId },
       select: ['id'],
     });
-    const content = await this.contentRepository.findOne({
-      where: { id: contentId },
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
       select: ['userId'],
     });
 
-    if (!content) {
+    if (!event) {
       throw new NotFoundException();
     }
 
-    return user.id === content.userId;
+    return user.id === event.userId;
   }
 }

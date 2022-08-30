@@ -1,78 +1,76 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { IsDate, IsNumber, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { DataType, ForeignKey } from 'sequelize-typescript';
-import { User } from '../user/user.entity';
+import { User } from '../users/user.entity';
 import { Type } from 'class-transformer';
 import { Monitor } from '../monitors/monitor.entity';
 
 @Entity('Events')
 export class Event {
   @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
-  @PrimaryGeneratedColumn('uuid')
-  id?: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор связи' })
-  @IsNumber({ allowNaN: true })
+  @ApiProperty({ example: '1', description: 'Идентификатор пользователя' })
+  @IsNumber({ allowNaN: false })
   @Column()
-  userId: number;
+  userId: User['id'];
 
   @ApiProperty({ example: 'Продажа экранов', description: 'Названия события' })
-  @IsString({ always: true })
+  @IsString({ always: false })
   @Column()
   name: string;
 
   @ApiProperty({ example: 'Экраны марки LG', description: 'Описание События' })
-  @IsString({ always: true })
-  @MaxLength(100, { always: true })
-  @Column({ type: 'varchar', length: 100, nullable: false })
+  @IsString({ always: false })
+  @MaxLength(100, { always: false })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   description: string;
 
   @ApiProperty({ example: '01.01.2021', description: 'Дата начала продаж ' })
-  @IsDate({ always: true })
-  @Column()
+  @IsDate({ always: false })
+  @Column({ nullable: true })
   startDate: string;
 
   @ApiProperty({ example: '01.01.2021', description: 'Дата окончания продаж' })
-  @IsDate({ always: true })
-  @Column()
+  @IsDate({ always: false })
+  @Column({ nullable: true })
   endDate: string;
 
   @ApiProperty({ example: '01.01.2021', description: 'Дата создания события' })
-  @IsDate({ always: true })
-  @Column()
+  @IsDate({ always: false })
+  @CreateDateColumn({ type: 'timestamptz' })
   createAt: string;
 
   @ApiProperty({
     example: '01.01.2021',
     description: 'Дата обновления события',
   })
-  @IsDate({ always: true })
-  @Column()
+  @IsDate({ always: false })
+  @UpdateDateColumn({ type: 'timestamptz' })
   updateAt: string;
 
-  @ManyToOne(() => User, (user) => user.id, {
+  @ManyToOne(() => User, (user) => user.event, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
+  @JoinColumn()
   user: User;
 
-  @OneToMany(() => Monitor, (monitor) => monitor.eventId, {
+  @OneToMany(() => Monitor, (monitor) => monitor.event, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   @Type(() => Monitor)
   @JoinColumn()
   monitors: Monitor[];
-
-  //   // @OneToMany(() => Monitor, (eventId) => eventId.event)
-  //   // @Type(() => Monitor)
-  //   // monitors?: Monitor[];
 }

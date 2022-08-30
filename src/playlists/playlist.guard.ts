@@ -7,35 +7,34 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
-import { Content } from './content.entity';
+import { Playlist } from './playlist.entity';
 
 @Injectable()
-export class ContentOwnerGuard implements CanActivate {
+export class PlaylistOwnerGuard implements CanActivate {
   constructor(
-    @InjectRepository(Content)
-    readonly contentRepository: Repository<Content>,
+    @InjectRepository(Playlist)
+    readonly playlistRepository: Repository<Playlist>,
     @InjectRepository(User)
     readonly userRepository: Repository<User>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-
-    const contentId = request.body.contentId || request.params.id;
+    const playlistId = request.body.playlistId || request.params.id;
     const currentUserId = await request.user.sub;
     const user = await this.userRepository.findOne({
       where: { auth0Id: currentUserId },
       select: ['id'],
     });
-    const content = await this.contentRepository.findOne({
-      where: { id: contentId },
+    const playlist = await this.playlistRepository.findOne({
+      where: { id: playlistId },
       select: ['userId'],
     });
 
-    if (!content) {
+    if (!playlist) {
       throw new NotFoundException();
     }
 
-    return user.id === content.userId;
+    return user.id === playlist.userId;
   }
 }

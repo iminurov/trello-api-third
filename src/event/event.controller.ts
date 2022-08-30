@@ -1,13 +1,17 @@
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Body, Controller } from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Controller, UseGuards } from '@nestjs/common';
 import { EventsService } from './event.service';
-import { Crud, CrudController } from '@nestjsx/crud';
 import { Event } from './event.entity';
-import { CreateEventDto } from './dto/create-event.dto';
-import { UpdateEventDto } from './dto/update-event.dto';
-import { CreatePlaylistDto } from '../playlists/dto/create-playlist.dto';
-// import { CreateEventDto } from "./dto/create-event.dto";
-// import { UpdateEventDto } from "./dto/update-event.dto";
+import { CreateEventDto, UpdateEventDto } from './dto/create-event.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ContentOwnerGuard } from '../contents/content.guards';
+import { EventsOwnerGuard } from './event.guard';
+import { Crud, CrudController } from '@nestjsx/crud';
 
 @Crud({
   model: {
@@ -24,42 +28,51 @@ import { CreatePlaylistDto } from '../playlists/dto/create-playlist.dto';
       primary: true,
     },
   },
-  // в роутах прописываются Guards и Api-шки
+
   routes: {
     updateOneBase: {
       decorators: [
+        UseGuards(ContentOwnerGuard),
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'ИЗменить событие' }),
         ApiResponse({ status: 200, type: CreateEventDto }),
       ],
     },
     getOneBase: {
       decorators: [
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'Получить событие' }),
-        ApiResponse({ status: 200, type: [Event] }),
+        ApiResponse({ status: 200, type: Event }),
       ],
     },
     createManyBase: {
       decorators: [
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'Создать много событий' }),
         ApiResponse({ status: 200, type: CreateEventDto }),
       ],
     },
     getManyBase: {
-      decorators: [
-        ApiOperation({ summary: 'Получить все события' }),
-        ApiResponse({ status: 200, type: [Event] }),
-      ],
+      decorators: [ApiOperation({ summary: 'Получить все события' })],
     },
     createOneBase: {
       decorators: [
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'Создать событие' }),
         ApiResponse({ status: 200, type: CreateEventDto }),
       ],
     },
+    deleteOneBase: {
+      decorators: [
+        UseGuards(EventsOwnerGuard),
+        ApiOperation({ summary: 'Удалить событие' }),
+      ],
+    },
   },
 })
-@ApiTags('Event')
-@Controller('Мероприятие')
+@ApiTags('events')
+@ApiBearerAuth()
+@Controller('/events')
 export class EventController implements CrudController<Event> {
   constructor(public service: EventsService) {}
 }

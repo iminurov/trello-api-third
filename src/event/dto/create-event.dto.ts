@@ -1,41 +1,43 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsDate,
-  IsDateString,
-  IsEmail,
-  IsString,
-  Length,
-  MaxLength,
-} from 'class-validator';
+import { IsNumber, IsString, MaxLength } from 'class-validator';
+import { Column } from 'typeorm';
+import { User } from '../../users/user.entity';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreateEventDto {
+  @ApiProperty({ example: '1', description: 'Уникальный идентификатор связи' })
+  @IsNumber({ allowNaN: false })
+  @Column()
+  userId: User['id'];
+
   @ApiProperty({
     example: 'Продажа экранов',
     description: 'Название мероприятия',
   })
-  @IsString({ message: 'Должно быть строкой' })
-  @MaxLength(100, { always: true })
+  @IsString()
+  @MaxLength(250, { always: true })
   name: string;
 
   @ApiProperty({
     example: 'Мероприятие по открытой продаже экранов разной диагонали ',
     description: 'Описание мероприятия',
   })
-  @IsString({ message: 'Должно быть строкой' })
-  @MaxLength(100, { always: true })
+  @IsString()
+  @MaxLength(250, { always: true })
   description: string;
 
   @ApiProperty({
     example: '01.01.2022',
     description: 'Дата начала мероприятия',
   })
-  @IsString({ message: 'Должно быть датой' })
+  @IsString()
   startDate: string;
 
   @ApiProperty({
     example: '01.01.2023',
     description: 'Дата окончания мероприятия',
   })
-  @IsString({ message: 'Должно быть датой' })
+  @IsString()
   endDate: string;
 }
+export class UpdateEventDto extends PartialType(CreateEventDto) {}

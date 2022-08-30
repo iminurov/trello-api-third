@@ -4,14 +4,17 @@ import { ContentsController } from './contents.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Content } from './content.entity';
 import { Playlist } from '../playlists/playlist.entity';
-import { PlaylistContentTable } from '../playist_content/RelationPlaylistContent';
+import { PlaylistContentTable } from './RelationPlaylistContent';
+import { User } from '../users/user.entity';
+import { Event } from '../event/event.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
+      User,
+      Event,
       Content,
       Playlist,
-      Content,
       PlaylistContentTable,
     ]),
   ],

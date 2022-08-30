@@ -1,16 +1,18 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
-import { IsDate, IsString, MaxLength } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../user/user.entity';
 import { Event } from '../event/event.entity';
 import { Playlist } from '../playlists/playlist.entity';
+import { User } from '../users/user.entity';
 
 @Entity('Monitor')
 export class Monitor {
@@ -20,11 +22,11 @@ export class Monitor {
 
   @ApiProperty({
     example: '1',
-    description: 'Уникальный идентификатор связи с организатором',
+    description: 'Уникальный идентификатор связи пользователя',
   })
-  @IsString({ always: true })
+  @IsNumber({ allowNaN: false })
   @Column()
-  userId: string;
+  userId: User['id'];
 
   @ApiProperty({
     example: '1',
@@ -44,24 +46,30 @@ export class Monitor {
     description: 'Дата начала продажи монитора',
   })
   @IsString({ always: true })
-  @Column()
-  createAt: string;
+  @CreateDateColumn({ nullable: true })
+  createdAt?: Date;
 
   @ApiProperty({
     example: '01.01.2021',
     description: 'Дата обновления монитора',
   })
-  @IsString({ always: true })
-  @Column()
-  updateAt: string;
+  @UpdateDateColumn({ nullable: true })
+  updatedAt?: Date;
 
-  @ManyToOne(() => Event, (event) => event.id, {
+  @ManyToOne(() => User, (user) => user.monitors, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  @JoinColumn()
+  user: User;
+
+  @ManyToOne(() => Event, (event) => event.monitors, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
   event: Event;
 
-  @OneToOne(() => Playlist, (playlist) => playlist.monitorsId)
+  @OneToOne(() => Playlist, (playlist) => playlist.monitors)
   @JoinColumn()
   playlist: Playlist;
 

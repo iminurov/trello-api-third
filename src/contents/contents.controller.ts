@@ -1,10 +1,22 @@
 import { Crud, CrudController } from '@nestjsx/crud';
-import { Controller, UseGuards } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Post,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { Content } from './content.entity';
 import { ContentsService } from './contents.service';
 import { CreateContentDto } from './dto/create-content.dto';
-import { UpdateContentDto } from './dto/update-event.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
 import { ContentOwnerGuard } from './content.guards';
 
 @Crud({
@@ -13,38 +25,39 @@ import { ContentOwnerGuard } from './content.guards';
   },
   dto: {
     create: CreateContentDto,
-    update: UpdateContentDto,
   },
-  // в роутах прописываются Guards и Api-шки
   routes: {
     createOneBase: {
       decorators: [
-        // UseGuards(JwtAuthGuard),
-        UseGuards(ContentOwnerGuard),
+        UseGuards(AuthGuard('jwt')),
+        UseInterceptors(FileInterceptor('fileType')),
         ApiOperation({ summary: 'Создать контент' }),
         ApiResponse({ status: 200, type: CreateContentDto }),
       ],
     },
     updateOneBase: {
       decorators: [
-        // UseGuards(JwtAuthGuard),
         UseGuards(ContentOwnerGuard),
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'Изменить контент' }),
-        ApiResponse({ status: 200, type: UpdateContentDto }),
+        ApiResponse({ status: 200 }),
       ],
     },
+
     deleteOneBase: {
       decorators: [
         UseGuards(ContentOwnerGuard),
+        UseGuards(AuthGuard('jwt')),
         ApiOperation({ summary: 'Удалить контент' }),
-        ApiResponse({ status: 200, type: [Content] }),
+        ApiResponse({ status: 200, type: CreateContentDto }),
       ],
     },
+    exclude: [],
   },
-  // exclude: [],
 })
-@ApiTags('Контент для плейлистов')
-@Controller('contents')
+@ApiTags('Contents')
+@ApiBearerAuth()
+@Controller('/contents')
 export class ContentsController implements CrudController<Content> {
   constructor(public service: ContentsService) {}
 }

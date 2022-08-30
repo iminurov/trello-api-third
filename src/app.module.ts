@@ -1,21 +1,20 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from './user/user.module';
-import { User } from './user/user.entity';
-import { AuthModule } from './auth/auth.module';
-import { AuthService } from './auth/auth.service';
-import { AuthController } from './auth/auth.controller';
-import { JwtAuthGuard } from './auth/jwt.auth.guard';
+import { UserModule } from './users/user.module';
+import { User } from './users/user.entity';
+
 import { Event } from './event/event.entity';
 import { PlaylistsModule } from './playlists/playlists.module';
 import { EventModule } from './event/event.module';
 import { MonitorsModule } from './monitors/monitors.module';
 import { ContentsModule } from './contents/contents.module';
-import { PlayistContentModule } from './playist_content/playist_content.module';
 import { Monitor } from './monitors/monitor.entity';
 import { Playlist } from './playlists/playlist.entity';
+import { PlaylistContentTable } from './contents/RelationPlaylistContent';
+
+import { FileModule } from './files/file.module';
+import { AuthModule } from './aut0/auth.module';
 import { Content } from './contents/content.entity';
-import { PlaylistContentTable } from './playist_content/RelationPlaylistContent';
 
 @Module({
   controllers: [],
@@ -28,17 +27,19 @@ import { PlaylistContentTable } from './playist_content/RelationPlaylistContent'
       username: 'postgres',
       password: 'root',
       database: 'nest-course',
-      synchronize: true,
+      synchronize: false,
       autoLoadEntities: true,
       entities: [User, Event, Monitor, Playlist, PlaylistContentTable, Content],
     }),
+    TypeOrmModule.forFeature([]),
     UserModule,
-    AuthModule,
     EventModule,
     MonitorsModule,
     PlaylistsModule,
     ContentsModule,
-    PlayistContentModule,
+    FileModule,
+    AuthModule,
   ],
+  exports: [],
 })
 export class AppModule {}

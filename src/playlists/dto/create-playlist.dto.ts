@@ -1,7 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsDateString, IsString, MaxLength } from 'class-validator';
+import { IsString, MaxLength } from 'class-validator';
+import { Column } from 'typeorm';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class CreatePlaylistDto {
+  @ApiProperty({
+    example: '1',
+    description: 'Уникальный идентификатор связи с организатором',
+  })
+  @IsString({ always: false })
+  @Column()
+  userId: string;
+
+  @ApiProperty({
+    example: '1',
+    description: 'Уникальный идентификатор связи с монитором',
+  })
+  @IsString({ always: false })
+  @Column()
+  monitorsId: string;
+
   @ApiProperty({ example: 'Виды природы', description: 'Название плейлиста' })
   @IsString({ message: 'Должно быть строкой' })
   @MaxLength(100, { always: true })
@@ -33,3 +51,4 @@ export class CreatePlaylistDto {
   @IsString({ message: 'Должно быть датой' })
   updateAt: string;
 }
+export class UpdatePlaylistDto extends PartialType(CreatePlaylistDto) {}
